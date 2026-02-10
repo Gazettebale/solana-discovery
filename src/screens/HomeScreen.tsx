@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 export default function HomeScreen() {
   const { currentIndex, handleSkip, handleExplore, handleReset, savedProjects } = useApp();
   const currentProject = projects[currentIndex];
+  const nextProject = projects[currentIndex + 1];
 
   return (
     <View style={styles.container}>
@@ -18,17 +19,24 @@ export default function HomeScreen() {
       </View>
 
       {currentProject ? (
-        <>
-          <ProjectCard project={currentProject} />
-          <View style={styles.buttons}>
-            <TouchableOpacity style={styles.skipBtn} onPress={handleSkip}>
-              <Text style={styles.skipText}>✕ Skip</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.exploreBtn} onPress={handleExplore}>
-              <Text style={styles.exploreText}>✓ Explore</Text>
-            </TouchableOpacity>
-          </View>
-        </>
+        <View style={styles.cardStack}>
+          {nextProject && (
+            <View style={styles.nextCard}>
+              <View style={[styles.nextCardInner, { borderColor: nextProject.color }]}>
+                <Text style={styles.nextIcon}>{nextProject.icon}</Text>
+                <Text style={styles.nextName}>{nextProject.name}</Text>
+                <Text style={styles.nextCategory}>{nextProject.category}</Text>
+              </View>
+            </View>
+          )}
+          <ProjectCard
+            key={currentProject.id}
+            project={currentProject}
+            onSwipeLeft={handleSkip}
+            onSwipeRight={handleExplore}
+            isFirst={currentIndex === 0}
+          />
+        </View>
       ) : (
         <View style={styles.done}>
           <Text style={styles.doneEmoji}>🎉</Text>
@@ -54,33 +62,27 @@ const styles = StyleSheet.create({
   },
   logo: { color: '#9945FF', fontSize: 24, fontWeight: 'bold' },
   counter: { color: '#666', fontSize: 16 },
-  buttons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-    marginTop: 24,
-    paddingHorizontal: 20,
-  },
-  skipBtn: {
+  cardStack: {
     flex: 1,
-    backgroundColor: '#2a1a2e',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  nextCard: {
+    position: 'absolute',
+    top: 8,
+    width: '95%',
+    opacity: 0.5,
+  },
+  nextCardInner: {
+    backgroundColor: '#1a1a2e',
+    borderRadius: 20,
+    padding: 20,
     borderWidth: 1,
-    borderColor: '#E94560',
-    borderRadius: 16,
-    paddingVertical: 14,
     alignItems: 'center',
   },
-  skipText: { color: '#E94560', fontSize: 18, fontWeight: 'bold' },
-  exploreBtn: {
-    flex: 1,
-    backgroundColor: '#1a2e1a',
-    borderWidth: 1,
-    borderColor: '#6CBF6C',
-    borderRadius: 16,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  exploreText: { color: '#6CBF6C', fontSize: 18, fontWeight: 'bold' },
+  nextIcon: { fontSize: 32 },
+  nextName: { color: '#fff', fontSize: 18, fontWeight: 'bold', marginTop: 8 },
+  nextCategory: { color: '#888', fontSize: 13, marginTop: 4 },
   done: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   doneEmoji: { fontSize: 64, marginBottom: 16 },
   doneText: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
