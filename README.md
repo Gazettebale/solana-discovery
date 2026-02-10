@@ -73,7 +73,7 @@ Scan the QR code with your Solana Seeker or Expo Go app.
 
 ## 👥 Team
 
-Built by [@_Gazettebale](https://twitter.com/Gazettebale)
+Built by [@_Gazettebale](https://twitter.com/_Gazettebale)
 
 ## 📄 License
 
