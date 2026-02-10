@@ -9,23 +9,20 @@ interface Props {
   project: Project;
   onSwipeLeft: () => void;
   onSwipeRight: () => void;
-  isFirst?: boolean;
 }
 
-export default function ProjectCard({ project, onSwipeLeft, onSwipeRight, isFirst }: Props) {
+export default function ProjectCard({ project, onSwipeLeft, onSwipeRight }: Props) {
   const pan = useRef(new Animated.ValueXY()).current;
-  const pulseAnim = useRef(new Animated.Value(0.4)).current;
+  const pulseAnim = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
-    if (isFirst) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: false }),
-          Animated.timing(pulseAnim, { toValue: 0.4, duration: 800, useNativeDriver: false }),
-        ])
-      ).start();
-    }
-  }, [isFirst]);
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 0.8, duration: 900, useNativeDriver: false }),
+        Animated.timing(pulseAnim, { toValue: 0.3, duration: 900, useNativeDriver: false }),
+      ])
+    ).start();
+  }, []);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -89,19 +86,17 @@ export default function ProjectCard({ project, onSwipeLeft, onSwipeRight, isFirs
         <Text style={styles.linkLabel}>{project.link}</Text>
       </View>
 
-      {isFirst && (
-        <Animated.View style={[styles.tutorial, { opacity: pulseAnim }]}>  
-          <View style={styles.tutorialRow}>
-            <View style={styles.tutorialArrowLeft}>
-              <Text style={styles.tutorialArrowTextRed}>SKIP</Text>
-            </View>
-            <Text style={styles.tutorialSwipe}>SWIPE</Text>
-            <View style={styles.tutorialArrowRight}>
-              <Text style={styles.tutorialArrowTextGreen}>SAVE</Text>
-            </View>
+      <Animated.View style={[styles.tutorial, { opacity: pulseAnim }]}>
+        <View style={styles.tutorialRow}>
+          <View style={styles.tutorialArrowLeft}>
+            <Text style={styles.tutorialArrowTextRed}>SKIP</Text>
           </View>
-        </Animated.View>
-      )}
+          <Text style={styles.tutorialSwipe}>SWIPE</Text>
+          <View style={styles.tutorialArrowRight}>
+            <Text style={styles.tutorialArrowTextGreen}>SAVE</Text>
+          </View>
+        </View>
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -114,8 +109,6 @@ const styles = StyleSheet.create({
     padding: 24,
     borderWidth: 1,
     alignSelf: 'center',
-    position: 'absolute',
-    top: 0,
   },
   labelLeft: {
     position: 'absolute',

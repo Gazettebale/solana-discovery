@@ -1,53 +1,73 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import { useRef, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import ProjectCard from '../components/ProjectCard';
+import MiniGame from '../components/MiniGame';
 import { projects } from '../data/projects';
 import { useApp } from '../context/AppContext';
 
 export default function HomeScreen() {
   const { currentIndex, handleSkip, handleExplore, handleReset, savedProjects } = useApp();
   const currentProject = projects[currentIndex];
-  const nextProject = projects[currentIndex + 1];
+  const streakSlide = useRef(new Animated.Value(-8)).current;
+  const streakPulse = useRef(new Animated.Value(0.6)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(streakSlide, { toValue: 8, duration: 1200, useNativeDriver: false }),
+          Animated.timing(streakPulse, { toValue: 1, duration: 1200, useNativeDriver: false }),
+        ]),
+        Animated.parallel([
+          Animated.timing(streakSlide, { toValue: -8, duration: 1200, useNativeDriver: false }),
+          Animated.timing(streakPulse, { toValue: 0.6, duration: 1200, useNativeDriver: false }),
+        ]),
+      ])
+    ).start();
+  }, []);
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} bounces={false}>
       <StatusBar style="light" />
 
       <View style={styles.topBar}>
-        <Text style={styles.logo}>⚡ SolQuest</Text>
-        <Text style={styles.counter}>{Math.min(currentIndex + 1, projects.length)}/{projects.length}</Text>
+        <Text style={styles.logo}>SolQuest</Text>
+        <Animated.View style={[styles.streakBox, { transform: [{ translateX: streakSlide }], opacity: streakPulse }]}>
+          <Text style={styles.streakText}>GM Streak: 1 day</Text>
+        </Animated.View>
+      </View>
+
+      <View style={styles.subBar}>
+        <Text style={styles.counter}>{Math.min(currentIndex + 1, projects.length)}/{projects.length} projects</Text>
+        <Text style={styles.savedText}>{savedProjects.length} saved</Text>
       </View>
 
       {currentProject ? (
-        <View style={styles.cardStack}>
-          {nextProject && (
-            <View style={styles.nextCard}>
-              <View style={[styles.nextCardInner, { borderColor: nextProject.color }]}>
-                <Text style={styles.nextIcon}>{nextProject.icon}</Text>
-                <Text style={styles.nextName}>{nextProject.name}</Text>
-                <Text style={styles.nextCategory}>{nextProject.category}</Text>
-              </View>
-            </View>
-          )}
-          <ProjectCard
-            key={currentProject.id}
-            project={currentProject}
-            onSwipeLeft={handleSkip}
-            onSwipeRight={handleExplore}
-            isFirst={currentIndex === 0}
-          />
-        </View>
+        <>
+          <View style={styles.cardWrapper}>
+            <ProjectCard
+              key={currentProject.id}
+              project={currentProject}
+              onSwipeLeft={handleSkip}
+              onSwipeRight={handleExplore}
+            />
+          </View>
+          <MiniGame />
+        </>
       ) : (
         <View style={styles.done}>
           <Text style={styles.doneEmoji}>🎉</Text>
-          <Text style={styles.doneText}>You've seen all projects!</Text>
+          <Text style={styles.doneText}>You have seen all projects!</Text>
           <Text style={styles.savedCount}>{savedProjects.length} projects saved</Text>
           <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
             <Text style={styles.resetText}>Start Over</Text>
           </TouchableOpacity>
         </View>
       )}
-    </View>
+
+      <View style={styles.bottomPadding} />
+    </ScrollView>
   );
 }
 
@@ -58,32 +78,31 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 6,
   },
   logo: { color: '#9945FF', fontSize: 24, fontWeight: 'bold' },
-  counter: { color: '#666', fontSize: 16 },
-  cardStack: {
-    flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  nextCard: {
-    position: 'absolute',
-    top: 8,
-    width: '95%',
-    opacity: 0.5,
-  },
-  nextCardInner: {
-    backgroundColor: '#1a1a2e',
-    borderRadius: 20,
-    padding: 20,
+  streakBox: {
+    backgroundColor: '#FF950022',
     borderWidth: 1,
-    alignItems: 'center',
+    borderColor: '#FF9500',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
-  nextIcon: { fontSize: 32 },
-  nextName: { color: '#fff', fontSize: 18, fontWeight: 'bold', marginTop: 8 },
-  nextCategory: { color: '#888', fontSize: 13, marginTop: 4 },
-  done: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  streakText: { color: '#FF9500', fontSize: 12, fontWeight: 'bold' },
+  subBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  counter: { color: '#666', fontSize: 13 },
+  savedText: { color: '#9945FF', fontSize: 13 },
+  cardWrapper: {
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  done: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 80 },
   doneEmoji: { fontSize: 64, marginBottom: 16 },
   doneText: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
   savedCount: { color: '#9945FF', fontSize: 16, marginTop: 8 },
@@ -95,4 +114,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   resetText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  bottomPadding: { height: 100 },
 });
