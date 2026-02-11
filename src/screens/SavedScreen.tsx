@@ -1,10 +1,12 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking, Modal } from 'react-native';
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { Project } from '../data/projects';
 
 export default function SavedScreen() {
   const { savedProjects } = useApp();
   const [filter, setFilter] = useState('All');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const categories = ['All', ...new Set(savedProjects.map(p => p.category))];
   const filtered = filter === 'All' ? savedProjects : savedProjects.filter(p => p.category === filter);
@@ -39,31 +41,19 @@ export default function SavedScreen() {
               <TouchableOpacity
                 key={project.id}
                 style={[styles.card, { borderLeftColor: project.color, borderLeftWidth: 3 }]}
-                onPress={() => Linking.openURL(project.link)}
+                onPress={() => setSelectedProject(project)}
                 activeOpacity={0.7}
               >
                 <View style={styles.cardTop}>
-                  <View style={styles.cardLeft}>
-                    <Text style={styles.cardIcon}>{project.icon}</Text>
-                    <View style={styles.cardInfo}>
-                      <Text style={styles.cardName}>{project.name}</Text>
-                      <View style={styles.cardBadges}>
-                        <Text style={[styles.cardCategory, { color: project.color }]}>{project.category}</Text>
-                        {project.isSeeker && (
-                          <Text style={styles.seekerTag}>Seeker</Text>
-                        )}
-                      </View>
+                  <Text style={styles.cardIcon}>{project.icon}</Text>
+                  <View style={styles.cardInfo}>
+                    <Text style={styles.cardName}>{project.name}</Text>
+                    <View style={styles.cardBadges}>
+                      <Text style={[styles.cardCategory, { color: project.color }]}>{project.category}</Text>
+                      {project.isSeeker && <Text style={styles.seekerTag}>Seeker</Text>}
                     </View>
                   </View>
-                </View>
-                <Text style={styles.cardDesc} numberOfLines={2}>{project.description}</Text>
-                <View style={styles.cardBottom}>
-                  <Text style={styles.cardReward}>{project.reward}</Text>
-                  <View style={[styles.openBtn, project.isSeeker ? styles.openBtnSeeker : styles.openBtnWeb]}>
-                    <Text style={[styles.openBtnText, project.isSeeker ? styles.openBtnTextSeeker : styles.openBtnTextWeb]}>
-                      {project.isSeeker ? 'Open App' : 'Visit Website'}
-                    </Text>
-                  </View>
+                  <Text style={styles.cardArrow}>›</Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -71,6 +61,115 @@ export default function SavedScreen() {
           </ScrollView>
         </>
       )}
+
+      <Modal visible={selectedProject !== null} animationType="slide" transparent>
+        {selectedProject && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalIcon}>{selectedProject.icon}</Text>
+                  <TouchableOpacity onPress={() => setSelectedProject(null)} style={styles.closeBtn}>
+                    <Text style={styles.closeBtnText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {selectedProject.isSeeker && (
+                  <View style={styles.seekerBadgeBig}>
+                    <Text style={styles.seekerBadgeText}>Seeker dApp Store</Text>
+                  </View>
+                )}
+
+                <Text style={styles.modalName}>{selectedProject.name}</Text>
+
+                <View style={styles.modalBadges}>
+                  <View style={[styles.modalBadge, { backgroundColor: selectedProject.color + '33' }]}>
+                    <Text style={[styles.modalBadgeText, { color: selectedProject.color }]}>{selectedProject.category}</Text>
+                  </View>
+                  <View style={[styles.modalBadge, { backgroundColor: '#333' }]}>
+                    <Text style={styles.modalBadgeText}>{selectedProject.difficulty}</Text>
+                  </View>
+                </View>
+
+                <Text style={styles.modalDesc}>{selectedProject.description}</Text>
+
+                <View style={styles.modalSection}>
+                  <Text style={styles.modalSectionTitle}>Reward</Text>
+                  <View style={styles.modalReward}>
+                    <Text style={styles.modalRewardText}>{selectedProject.reward}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.modalSection}>
+                  <Text style={styles.modalSectionTitle}>Things to do</Text>
+                  <View style={styles.todoItem}>
+                    <Text style={styles.todoCheck}>○</Text>
+                    <Text style={styles.todoText}>Visit {selectedProject.name} and create an account</Text>
+                  </View>
+                  <View style={styles.todoItem}>
+                    <Text style={styles.todoCheck}>○</Text>
+                    <Text style={styles.todoText}>Complete your first action on the platform</Text>
+                  </View>
+                  {selectedProject.isSeeker && (
+                    <>
+                      <View style={styles.todoItem}>
+                        <Text style={styles.todoCheck}>○</Text>
+                        <Text style={styles.todoText}>Use the app directly from your Seeker</Text>
+                      </View>
+                      <View style={styles.todoItem}>
+                        <Text style={styles.todoCheck}>⭐</Text>
+                        <Text style={styles.todoTextHighlight}>Leave a review on the dApp Store</Text>
+                      </View>
+                    </>
+                  )}
+                  {selectedProject.category === 'DeFi' && (
+                    <View style={styles.todoItem}>
+                      <Text style={styles.todoCheck}>○</Text>
+                      <Text style={styles.todoText}>Make your first swap or deposit</Text>
+                    </View>
+                  )}
+                  {selectedProject.category === 'Staking' && (
+                    <View style={styles.todoItem}>
+                      <Text style={styles.todoCheck}>○</Text>
+                      <Text style={styles.todoText}>Stake your first SOL or tokens</Text>
+                    </View>
+                  )}
+                  {selectedProject.category === 'NFT' && (
+                    <View style={styles.todoItem}>
+                      <Text style={styles.todoCheck}>○</Text>
+                      <Text style={styles.todoText}>Browse collections and make your first bid</Text>
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, { backgroundColor: selectedProject.color + '22', borderColor: selectedProject.color }]}
+                    onPress={() => Linking.openURL(selectedProject.link)}
+                  >
+                    <Text style={[styles.actionBtnText, { color: selectedProject.color }]}>
+                      {selectedProject.isSeeker ? 'Open App' : 'Visit Website'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {selectedProject.isSeeker && (
+                    <TouchableOpacity
+                      style={styles.reviewBtn}
+                      onPress={() => Linking.openURL(selectedProject.link)}
+                    >
+                      <Text style={styles.reviewBtnText}>Leave a Review</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                <View style={styles.modalLink}>
+                  <Text style={styles.modalLinkText}>{selectedProject.link}</Text>
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        )}
+      </Modal>
     </View>
   );
 }
@@ -93,10 +192,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#333',
   },
-  filterBtnActive: {
-    backgroundColor: '#9945FF22',
-    borderColor: '#9945FF',
-  },
+  filterBtnActive: { backgroundColor: '#9945FF22', borderColor: '#9945FF' },
   filterText: { color: '#888', fontSize: 13 },
   filterTextActive: { color: '#9945FF', fontWeight: 'bold' },
   list: { paddingHorizontal: 16 },
@@ -104,43 +200,112 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a2e',
     borderRadius: 12,
     padding: 14,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   cardTop: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
   },
-  cardLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   cardIcon: { fontSize: 28, marginRight: 10 },
   cardInfo: { flex: 1 },
   cardName: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   cardBadges: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
   cardCategory: { fontSize: 12, fontWeight: '600' },
   seekerTag: { color: '#14F195', fontSize: 10, fontWeight: 'bold', backgroundColor: '#14F19522', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-  cardDesc: { color: '#888', fontSize: 13, lineHeight: 18, marginBottom: 10 },
-  cardBottom: {
+  cardArrow: { color: '#666', fontSize: 28 },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: '#000000CC',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#0f0f1a',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    maxHeight: '85%',
+    borderTopWidth: 1,
+    borderColor: '#333',
+  },
+  modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12,
   },
-  cardReward: { color: '#9945FF', fontSize: 12, fontWeight: '600' },
-  openBtn: {
+  modalIcon: { fontSize: 56 },
+  closeBtn: {
+    backgroundColor: '#1a1a2e',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeBtnText: { color: '#888', fontSize: 18 },
+  seekerBadgeBig: {
+    backgroundColor: '#14F19522',
+    borderWidth: 1,
+    borderColor: '#14F195',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 5,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+  },
+  seekerBadgeText: { color: '#14F195', fontSize: 13, fontWeight: 'bold' },
+  modalName: { color: '#fff', fontSize: 28, fontWeight: 'bold', marginBottom: 8 },
+  modalBadges: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  modalBadge: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12 },
+  modalBadgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  modalDesc: { color: '#aaa', fontSize: 15, lineHeight: 22, marginBottom: 20 },
+  modalSection: { marginBottom: 20 },
+  modalSectionTitle: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
+  modalReward: {
+    backgroundColor: '#1a1a2e',
+    borderRadius: 10,
+    padding: 12,
+  },
+  modalRewardText: { color: '#9945FF', fontSize: 14, fontWeight: 'bold' },
+  todoItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+    gap: 10,
+  },
+  todoCheck: { color: '#9945FF', fontSize: 16, marginTop: 1 },
+  todoText: { color: '#aaa', fontSize: 14, flex: 1, lineHeight: 20 },
+  todoTextHighlight: { color: '#FF9500', fontSize: 14, flex: 1, fontWeight: '600', lineHeight: 20 },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  actionBtn: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
     borderWidth: 1,
   },
-  openBtnSeeker: {
-    backgroundColor: '#14F19515',
-    borderColor: '#14F195',
+  actionBtnText: { fontSize: 14, fontWeight: 'bold' },
+  reviewBtn: {
+    flex: 1,
+    backgroundColor: '#FF950015',
+    borderWidth: 1,
+    borderColor: '#FF9500',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
-  openBtnWeb: {
-    backgroundColor: '#9945FF15',
-    borderColor: '#9945FF',
+  reviewBtnText: { color: '#FF9500', fontSize: 14, fontWeight: 'bold' },
+  modalLink: {
+    backgroundColor: '#1a1a2e',
+    borderRadius: 10,
+    padding: 10,
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  openBtnText: { fontSize: 11, fontWeight: 'bold' },
-  openBtnTextSeeker: { color: '#14F195' },
-  openBtnTextWeb: { color: '#9945FF' },
+  modalLinkText: { color: '#666', fontSize: 12 },
 });

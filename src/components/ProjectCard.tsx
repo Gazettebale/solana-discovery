@@ -1,9 +1,27 @@
 import { View, Text, StyleSheet, Dimensions, Animated, PanResponder } from 'react-native';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Project } from '../data/projects';
 
 const { width } = Dimensions.get('window');
 const SWIPE_THRESHOLD = width * 0.25;
+
+const QUOTES = [
+  "Consistency is key",
+  "Every day counts",
+  "Build in silence, let success make noise",
+  "The harvest comes at the end",
+  "Small steps, big results",
+  "Stay focused, stay grinding",
+  "Trust the process",
+  "Fortune favors the bold",
+  "Discipline beats motivation",
+  "WAGMI - We're all gonna make it",
+  "Diamond hands always win",
+  "The best time to start was yesterday",
+  "Stack sats, stack skills",
+  "Not your keys, not your coins",
+  "One day or day one, you decide",
+];
 
 interface Props {
   project: Project;
@@ -14,6 +32,9 @@ interface Props {
 export default function ProjectCard({ project, onSwipeLeft, onSwipeRight }: Props) {
   const pan = useRef(new Animated.ValueXY()).current;
   const pulseAnim = useRef(new Animated.Value(0.3)).current;
+  const flashOpacity = useRef(new Animated.Value(0)).current;
+  const [flashColor, setFlashColor] = useState('#6CBF6C');
+  const [quote] = useState(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
 
   useEffect(() => {
     Animated.loop(
@@ -24,14 +45,22 @@ export default function ProjectCard({ project, onSwipeLeft, onSwipeRight }: Prop
     ).start();
   }, []);
 
+  const triggerFlash = (color: string) => {
+    setFlashColor(color);
+    flashOpacity.setValue(0.4);
+    Animated.timing(flashOpacity, { toValue: 0, duration: 400, useNativeDriver: false }).start();
+  };
+
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 5,
       onPanResponderMove: Animated.event([null, { dx: pan.x }], { useNativeDriver: false }),
       onPanResponderRelease: (_, gesture) => {
         if (gesture.dx > SWIPE_THRESHOLD) {
+          triggerFlash('#6CBF6C');
           Animated.timing(pan.x, { toValue: width * 1.5, duration: 300, useNativeDriver: false }).start(() => onSwipeRight());
         } else if (gesture.dx < -SWIPE_THRESHOLD) {
+          triggerFlash('#E94560');
           Animated.timing(pan.x, { toValue: -width * 1.5, duration: 300, useNativeDriver: false }).start(() => onSwipeLeft());
         } else {
           Animated.spring(pan.x, { toValue: 0, useNativeDriver: false }).start();
@@ -45,63 +74,86 @@ export default function ProjectCard({ project, onSwipeLeft, onSwipeRight }: Prop
   const exploreOpacity = pan.x.interpolate({ inputRange: [0, SWIPE_THRESHOLD], outputRange: [0, 1], extrapolate: 'clamp' });
 
   return (
-    <Animated.View
-      {...panResponder.panHandlers}
-      style={[styles.card, { borderColor: project.color, transform: [{ translateX: pan.x }, { rotate }] }]}
-    >
-      <Animated.View style={[styles.labelLeft, { opacity: skipOpacity }]}>
-        <Text style={styles.labelLeftText}>SKIP</Text>
-      </Animated.View>
-      <Animated.View style={[styles.labelRight, { opacity: exploreOpacity }]}>
-        <Text style={styles.labelRightText}>EXPLORE</Text>
-      </Animated.View>
-
-      {project.isSeeker && (
-        <View style={styles.seekerBadge}>
-          <Text style={styles.seekerText}>Seeker dApp Store</Text>
-        </View>
-      )}
-
-      <View style={styles.header}>
-        <Text style={styles.icon}>{project.icon}</Text>
-        <View style={styles.badges}>
-          <View style={[styles.badge, { backgroundColor: project.color + '33' }]}>
-            <Text style={[styles.badgeText, { color: project.color }]}>{project.category}</Text>
-          </View>
-          <View style={[styles.badge, { backgroundColor: '#333' }]}>
-            <Text style={styles.badgeText}>{project.difficulty}</Text>
-          </View>
-        </View>
+    <View>
+      <View style={styles.quoteBox}>
+        <Text style={styles.quoteText}>"{quote}"</Text>
       </View>
 
-      <Text style={styles.name}>{project.name}</Text>
-      <Text style={styles.description}>{project.description}</Text>
+      <Animated.View style={[styles.flash, { backgroundColor: flashColor, opacity: flashOpacity }]} pointerEvents="none" />
 
-      <View style={styles.rewardBox}>
-        <Text style={styles.rewardLabel}>Reward</Text>
-        <Text style={styles.rewardText}>{project.reward}</Text>
-      </View>
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[styles.card, { borderColor: project.color, transform: [{ translateX: pan.x }, { rotate }] }]}
+      >
+        <Animated.View style={[styles.labelLeft, { opacity: skipOpacity }]}>
+          <Text style={styles.labelLeftText}>SKIP</Text>
+        </Animated.View>
+        <Animated.View style={[styles.labelRight, { opacity: exploreOpacity }]}>
+          <Text style={styles.labelRightText}>EXPLORE</Text>
+        </Animated.View>
 
-      <View style={styles.linkBox}>
-        <Text style={styles.linkLabel}>{project.link}</Text>
-      </View>
-
-      <Animated.View style={[styles.tutorial, { opacity: pulseAnim }]}>
-        <View style={styles.tutorialRow}>
-          <View style={styles.tutorialArrowLeft}>
-            <Text style={styles.tutorialArrowTextRed}>SKIP</Text>
+        {project.isSeeker && (
+          <View style={styles.seekerBadge}>
+            <Text style={styles.seekerText}>Seeker dApp Store</Text>
           </View>
-          <Text style={styles.tutorialSwipe}>SWIPE</Text>
-          <View style={styles.tutorialArrowRight}>
-            <Text style={styles.tutorialArrowTextGreen}>SAVE</Text>
+        )}
+
+        <View style={styles.header}>
+          <Text style={styles.icon}>{project.icon}</Text>
+          <View style={styles.badges}>
+            <View style={[styles.badge, { backgroundColor: project.color + '33' }]}>
+              <Text style={[styles.badgeText, { color: project.color }]}>{project.category}</Text>
+            </View>
+            <View style={[styles.badge, { backgroundColor: '#333' }]}>
+              <Text style={styles.badgeText}>{project.difficulty}</Text>
+            </View>
           </View>
         </View>
+
+        <Text style={styles.name}>{project.name}</Text>
+        <Text style={styles.description}>{project.description}</Text>
+
+        <View style={styles.rewardBox}>
+          <Text style={styles.rewardLabel}>Reward</Text>
+          <Text style={styles.rewardText}>{project.reward}</Text>
+        </View>
+
+        <View style={styles.linkBox}>
+          <Text style={styles.linkLabel}>{project.link}</Text>
+        </View>
+
+        <Animated.View style={[styles.tutorial, { opacity: pulseAnim }]}>
+          <View style={styles.tutorialRow}>
+            <View style={styles.tutorialArrowLeft}>
+              <Text style={styles.tutorialArrowTextRed}>SKIP</Text>
+            </View>
+            <Text style={styles.tutorialSwipe}>SWIPE</Text>
+            <View style={styles.tutorialArrowRight}>
+              <Text style={styles.tutorialArrowTextGreen}>SAVE</Text>
+            </View>
+          </View>
+        </Animated.View>
       </Animated.View>
-    </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  quoteBox: {
+    paddingHorizontal: 8,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  quoteText: { color: '#555', fontSize: 12, fontStyle: 'italic', textAlign: 'center' },
+  flash: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 20,
+    zIndex: 100,
+  },
   card: {
     width: width - 32,
     backgroundColor: '#1a1a2e',
@@ -181,6 +233,7 @@ const styles = StyleSheet.create({
     borderColor: '#9945FF',
     backgroundColor: '#9945FF15',
   },
+  
   tutorialRow: {
     flexDirection: 'row',
     alignItems: 'center',
