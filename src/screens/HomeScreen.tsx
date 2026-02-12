@@ -7,7 +7,7 @@ import { projects } from '../data/projects';
 import { useApp } from '../context/AppContext';
 
 export default function HomeScreen() {
-  const { currentIndex, handleSkip, handleExplore, handleReset, savedProjects } = useApp();
+  const { currentIndex, skipProject, saveProject, savedProjects } = useApp();
   const currentProject = projects[currentIndex];
   const streakSlide = useRef(new Animated.Value(-8)).current;
   const streakPulse = useRef(new Animated.Value(0.6)).current;
@@ -49,8 +49,8 @@ export default function HomeScreen() {
             <ProjectCard
               key={currentProject.id}
               project={currentProject}
-              onSwipeLeft={handleSkip}
-              onSwipeRight={handleExplore}
+              onSwipeLeft={skipProject}
+              onSwipeRight={() => saveProject(currentProject)}
             />
           </View>
           <MiniGame />
@@ -60,9 +60,6 @@ export default function HomeScreen() {
           <Text style={styles.doneEmoji}>🎉</Text>
           <Text style={styles.doneText}>You have seen all projects!</Text>
           <Text style={styles.savedCount}>{savedProjects.length} projects saved</Text>
-          <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
-            <Text style={styles.resetText}>Start Over</Text>
-          </TouchableOpacity>
         </View>
       )}
 
@@ -106,13 +103,5 @@ const styles = StyleSheet.create({
   doneEmoji: { fontSize: 64, marginBottom: 16 },
   doneText: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
   savedCount: { color: '#9945FF', fontSize: 16, marginTop: 8 },
-  resetBtn: {
-    marginTop: 24,
-    backgroundColor: '#9945FF',
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  resetText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   bottomPadding: { height: 100 },
 });

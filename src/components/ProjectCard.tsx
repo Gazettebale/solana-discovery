@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Dimensions, Animated, PanResponder } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Animated, PanResponder, Image } from 'react-native';
 import { useRef, useEffect, useState } from 'react';
 import { Project } from '../data/projects';
 
@@ -6,21 +6,23 @@ const { width } = Dimensions.get('window');
 const SWIPE_THRESHOLD = width * 0.25;
 
 const QUOTES = [
-  "Consistency is key",
-  "Every day counts",
-  "Build in silence, let success make noise",
-  "The harvest comes at the end",
-  "Small steps, big results",
-  "Stay focused, stay grinding",
-  "Trust the process",
-  "Fortune favors the bold",
-  "Discipline beats motivation",
-  "WAGMI - We're all gonna make it",
-  "Diamond hands always win",
-  "The best time to start was yesterday",
-  "Stack sats, stack skills",
-  "Not your keys, not your coins",
-  "One day or day one, you decide",
+  "Consistency is key 🔑",
+  "Every day counts 📅",
+  "Build in silence, let success make noise 🤫",
+  "The harvest comes at the end 🌾",
+  "Small steps, big results 👣",
+  "Stay focused, stay grinding 💪",
+  "Trust the process 🎯",
+  "Fortune favors the bold 🍀",
+  "Discipline beats motivation ⚡",
+  "WAGMI 🤝",
+  "Diamond hands always win 💎",
+  "The best time to start was yesterday ⏰",
+  "One day or day one, you decide 🔥",
+  "The musicians get paid at the end of the ball 🎵",
+  "Your future self will thank you 🙏",
+  "Winners never quit 🏆",
+  "Stack daily, shine forever ✨",
 ];
 
 interface Props {
@@ -33,6 +35,8 @@ export default function ProjectCard({ project, onSwipeLeft, onSwipeRight }: Prop
   const pan = useRef(new Animated.ValueXY()).current;
   const pulseAnim = useRef(new Animated.Value(0.3)).current;
   const flashOpacity = useRef(new Animated.Value(0)).current;
+  const quoteScale = useRef(new Animated.Value(0.5)).current;
+  const quoteFade = useRef(new Animated.Value(0)).current;
   const [flashColor, setFlashColor] = useState('#6CBF6C');
   const [quote] = useState(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
 
@@ -43,6 +47,14 @@ export default function ProjectCard({ project, onSwipeLeft, onSwipeRight }: Prop
         Animated.timing(pulseAnim, { toValue: 0.3, duration: 900, useNativeDriver: false }),
       ])
     ).start();
+
+    Animated.sequence([
+      Animated.delay(200),
+      Animated.parallel([
+        Animated.spring(quoteScale, { toValue: 1, friction: 6, useNativeDriver: false }),
+        Animated.timing(quoteFade, { toValue: 1, duration: 400, useNativeDriver: false }),
+      ]),
+    ]).start();
   }, []);
 
   const triggerFlash = (color: string) => {
@@ -75,9 +87,9 @@ export default function ProjectCard({ project, onSwipeLeft, onSwipeRight }: Prop
 
   return (
     <View>
-      <View style={styles.quoteBox}>
-        <Text style={styles.quoteText}>"{quote}"</Text>
-      </View>
+      <Animated.View style={[styles.quoteBox, { opacity: quoteFade, transform: [{ scale: quoteScale }] }]}>
+        <Text style={styles.quoteText}>{quote}</Text>
+      </Animated.View>
 
       <Animated.View style={[styles.flash, { backgroundColor: flashColor, opacity: flashOpacity }]} pointerEvents="none" />
 
@@ -99,7 +111,11 @@ export default function ProjectCard({ project, onSwipeLeft, onSwipeRight }: Prop
         )}
 
         <View style={styles.header}>
-          <Text style={styles.icon}>{project.icon}</Text>
+          {project.logo ? (
+            <Image source={project.logo} style={styles.logo} />
+          ) : (
+            <Text style={styles.icon}>{project.icon}</Text>
+          )}
           <View style={styles.badges}>
             <View style={[styles.badge, { backgroundColor: project.color + '33' }]}>
               <Text style={[styles.badgeText, { color: project.color }]}>{project.category}</Text>
@@ -140,14 +156,20 @@ export default function ProjectCard({ project, onSwipeLeft, onSwipeRight }: Prop
 
 const styles = StyleSheet.create({
   quoteBox: {
-    paddingHorizontal: 8,
-    marginBottom: 10,
+    backgroundColor: '#9945FF15',
+    borderWidth: 1,
+    borderColor: '#9945FF44',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginBottom: 12,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  quoteText: { color: '#555', fontSize: 12, fontStyle: 'italic', textAlign: 'center' },
+  quoteText: { color: '#9945FF', fontSize: 13, fontWeight: '600', fontStyle: 'italic', textAlign: 'center' },
   flash: {
     position: 'absolute',
-    top: 0,
+    top: 40,
     left: 0,
     right: 0,
     bottom: 0,
@@ -201,6 +223,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  logo: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+  },
   icon: { fontSize: 48 },
   badges: { flexDirection: 'row', gap: 8 },
   badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
@@ -233,7 +260,6 @@ const styles = StyleSheet.create({
     borderColor: '#9945FF',
     backgroundColor: '#9945FF15',
   },
-  
   tutorialRow: {
     flexDirection: 'row',
     alignItems: 'center',

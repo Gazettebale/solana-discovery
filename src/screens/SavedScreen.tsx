@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking, Modal, Image } from 'react-native';
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Project } from '../data/projects';
@@ -45,7 +45,11 @@ export default function SavedScreen() {
                 activeOpacity={0.7}
               >
                 <View style={styles.cardTop}>
-                  <Text style={styles.cardIcon}>{project.icon}</Text>
+                  {project.logo ? (
+                    <Image source={project.logo} style={styles.cardLogo} />
+                  ) : (
+                    <Text style={styles.cardIcon}>{project.icon}</Text>
+                  )}
                   <View style={styles.cardInfo}>
                     <Text style={styles.cardName}>{project.name}</Text>
                     <View style={styles.cardBadges}>
@@ -68,7 +72,11 @@ export default function SavedScreen() {
             <View style={styles.modalContent}>
               <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalIcon}>{selectedProject.icon}</Text>
+                  {selectedProject.logo ? (
+                    <Image source={selectedProject.logo} style={styles.modalLogo} />
+                  ) : (
+                    <Text style={styles.modalIcon}>{selectedProject.icon}</Text>
+                  )}
                   <TouchableOpacity onPress={() => setSelectedProject(null)} style={styles.closeBtn}>
                     <Text style={styles.closeBtnText}>✕</Text>
                   </TouchableOpacity>
@@ -128,10 +136,10 @@ export default function SavedScreen() {
                       <Text style={styles.todoText}>Make your first swap or deposit</Text>
                     </View>
                   )}
-                  {selectedProject.category === 'Staking' && (
+                  {selectedProject.category === 'Game' && (
                     <View style={styles.todoItem}>
                       <Text style={styles.todoCheck}>○</Text>
-                      <Text style={styles.todoText}>Stake your first SOL or tokens</Text>
+                      <Text style={styles.todoText}>Play your first game and earn rewards</Text>
                     </View>
                   )}
                   {selectedProject.category === 'NFT' && (
@@ -206,6 +214,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  cardLogo: { width: 36, height: 36, borderRadius: 8, marginRight: 10 },
   cardIcon: { fontSize: 28, marginRight: 10 },
   cardInfo: { flex: 1 },
   cardName: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
@@ -214,11 +223,7 @@ const styles = StyleSheet.create({
   seekerTag: { color: '#14F195', fontSize: 10, fontWeight: 'bold', backgroundColor: '#14F19522', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
   cardArrow: { color: '#666', fontSize: 28 },
 
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: '#000000CC',
-    justifyContent: 'flex-end',
-  },
+  modalOverlay: { flex: 1, backgroundColor: '#000000CC', justifyContent: 'flex-end' },
   modalContent: {
     backgroundColor: '#0f0f1a',
     borderTopLeftRadius: 24,
@@ -234,6 +239,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  modalLogo: { width: 64, height: 64, borderRadius: 16 },
   modalIcon: { fontSize: 56 },
   closeBtn: {
     backgroundColor: '#1a1a2e',
@@ -262,33 +268,14 @@ const styles = StyleSheet.create({
   modalDesc: { color: '#aaa', fontSize: 15, lineHeight: 22, marginBottom: 20 },
   modalSection: { marginBottom: 20 },
   modalSectionTitle: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
-  modalReward: {
-    backgroundColor: '#1a1a2e',
-    borderRadius: 10,
-    padding: 12,
-  },
+  modalReward: { backgroundColor: '#1a1a2e', borderRadius: 10, padding: 12 },
   modalRewardText: { color: '#9945FF', fontSize: 14, fontWeight: 'bold' },
-  todoItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 10,
-    gap: 10,
-  },
+  todoItem: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10, gap: 10 },
   todoCheck: { color: '#9945FF', fontSize: 16, marginTop: 1 },
   todoText: { color: '#aaa', fontSize: 14, flex: 1, lineHeight: 20 },
   todoTextHighlight: { color: '#FF9500', fontSize: 14, flex: 1, fontWeight: '600', lineHeight: 20 },
-  modalActions: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 16,
-  },
-  actionBtn: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-  },
+  modalActions: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+  actionBtn: { flex: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', borderWidth: 1 },
   actionBtnText: { fontSize: 14, fontWeight: 'bold' },
   reviewBtn: {
     flex: 1,
@@ -300,12 +287,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   reviewBtnText: { color: '#FF9500', fontSize: 14, fontWeight: 'bold' },
-  modalLink: {
-    backgroundColor: '#1a1a2e',
-    borderRadius: 10,
-    padding: 10,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
+  modalLink: { backgroundColor: '#1a1a2e', borderRadius: 10, padding: 10, alignItems: 'center', marginBottom: 20 },
   modalLinkText: { color: '#666', fontSize: 12 },
 });

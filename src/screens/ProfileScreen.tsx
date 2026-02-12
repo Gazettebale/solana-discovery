@@ -2,6 +2,21 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useApp } from '../context/AppContext';
 import { projects } from '../data/projects';
 
+const ACHIEVEMENTS = [
+  { id: 'a1', title: 'First Look', desc: 'Review your first project', emoji: '👀', rarity: 'Common', color: '#888', check: (r: number, s: number, sk: number) => r >= 1 },
+  { id: 'a2', title: 'Curious Mind', desc: 'Review 10 projects', emoji: '🧠', rarity: 'Common', color: '#888', check: (r: number, s: number, sk: number) => r >= 10 },
+  { id: 'a3', title: 'Collector', desc: 'Save 5 projects', emoji: '⭐', rarity: 'Uncommon', color: '#4CAF50', check: (r: number, s: number, sk: number) => s >= 5 },
+  { id: 'a4', title: 'Seeker Fan', desc: 'Save 5 Seeker apps', emoji: '📱', rarity: 'Uncommon', color: '#4CAF50', check: (r: number, s: number, sk: number) => sk >= 5 },
+  { id: 'a5', title: 'Half Way', desc: 'Review half of all projects', emoji: '🎯', rarity: 'Rare', color: '#2196F3', check: (r: number, s: number, sk: number) => r >= Math.floor(projects.length / 2) },
+  { id: 'a6', title: 'Dedicated Saver', desc: 'Save 15 projects', emoji: '💾', rarity: 'Rare', color: '#2196F3', check: (r: number, s: number, sk: number) => s >= 15 },
+  { id: 'a7', title: 'Explorer', desc: 'Review every project', emoji: '🏆', rarity: 'Epic', color: '#9945FF', check: (r: number, s: number, sk: number) => r >= projects.length },
+  { id: 'a8', title: 'Seeker OG', desc: 'Save all Seeker apps', emoji: '🔮', rarity: 'Epic', color: '#9945FF', check: (r: number, s: number, sk: number) => sk >= projects.filter(p => p.isSeeker).length },
+  { id: 'a9', title: 'Streak King', desc: '7-day GM streak', emoji: '🔥', rarity: 'Epic', color: '#9945FF', check: () => false },
+  { id: 'a10', title: 'Diamond Hands', desc: 'Stake $100+ in SKR', emoji: '💎', rarity: 'Legendary', color: '#FFD700', check: () => false },
+  { id: 'a11', title: 'Validator OG', desc: 'Stake 2+ SOL with validator', emoji: '🏛️', rarity: 'Legendary', color: '#FFD700', check: () => false },
+  { id: 'a12', title: 'Genesis', desc: 'All achievements unlocked', emoji: '👑', rarity: 'Mythic', color: '#FF4500', check: () => false },
+];
+
 export default function ProfileScreen() {
   const { savedProjects, currentIndex } = useApp();
   const reviewed = currentIndex;
@@ -9,6 +24,8 @@ export default function ProfileScreen() {
   const seekerCount = savedProjects.filter(p => p.isSeeker).length;
   const categories = [...new Set(savedProjects.map(p => p.category))];
   const progress = Math.round((reviewed / total) * 100);
+
+  const unlockedCount = ACHIEVEMENTS.filter(a => a.check(reviewed, savedProjects.length, seekerCount)).length;
 
   return (
     <ScrollView style={styles.container} bounces={false}>
@@ -64,46 +81,63 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Achievements</Text>
+        <View style={styles.achieveHeader}>
+          <Text style={styles.sectionTitle}>Achievements</Text>
+          <Text style={styles.achieveCount}>{unlockedCount}/{ACHIEVEMENTS.length}</Text>
+        </View>
+
+        <View style={styles.rarityLegend}>
+          <Text style={[styles.rarityDot, { color: '#888' }]}>● Common</Text>
+          <Text style={[styles.rarityDot, { color: '#4CAF50' }]}>● Uncommon</Text>
+          <Text style={[styles.rarityDot, { color: '#2196F3' }]}>● Rare</Text>
+          <Text style={[styles.rarityDot, { color: '#9945FF' }]}>● Epic</Text>
+          <Text style={[styles.rarityDot, { color: '#FFD700' }]}>● Legendary</Text>
+          <Text style={[styles.rarityDot, { color: '#FF4500' }]}>● Mythic</Text>
+        </View>
+
         <View style={styles.achievements}>
-          <View style={[styles.achievement, reviewed >= 1 && styles.achievementDone]}>
-            <Text style={styles.achieveEmoji}>👀</Text>
-            <Text style={styles.achieveText}>First Look</Text>
-            <Text style={styles.achieveDesc}>Review 1 project</Text>
-          </View>
-          <View style={[styles.achievement, savedProjects.length >= 5 && styles.achievementDone]}>
-            <Text style={styles.achieveEmoji}>⭐</Text>
-            <Text style={styles.achieveText}>Collector</Text>
-            <Text style={styles.achieveDesc}>Save 5 projects</Text>
-          </View>
-          <View style={[styles.achievement, seekerCount >= 5 && styles.achievementDone]}>
-            <Text style={styles.achieveEmoji}>📱</Text>
-            <Text style={styles.achieveText}>Seeker Fan</Text>
-            <Text style={styles.achieveDesc}>Save 5 Seeker apps</Text>
-          </View>
-          <View style={[styles.achievement, reviewed >= total && styles.achievementDone]}>
-            <Text style={styles.achieveEmoji}>🏆</Text>
-            <Text style={styles.achieveText}>Explorer</Text>
-            <Text style={styles.achieveDesc}>Review all projects</Text>
-          </View>
-          <View style={[styles.achievement, categories.length >= 5 && styles.achievementDone]}>
-            <Text style={styles.achieveEmoji}>🌈</Text>
-            <Text style={styles.achieveText}>Diverse</Text>
-            <Text style={styles.achieveDesc}>Explore 5 categories</Text>
-          </View>
-          <View style={[styles.achievement, false && styles.achievementDone]}>
-            <Text style={styles.achieveEmoji}>🔥</Text>
-            <Text style={styles.achieveText}>Streak King</Text>
-            <Text style={styles.achieveDesc}>7 day GM streak</Text>
-          </View>
+          {ACHIEVEMENTS.map(a => {
+            const unlocked = a.check(reviewed, savedProjects.length, seekerCount);
+            return (
+              <View key={a.id} style={[styles.achievement, unlocked ? { borderColor: a.color, borderWidth: 1 } : {}]}>
+                <View style={[styles.achieveRarityBar, { backgroundColor: unlocked ? a.color : '#333' }]} />
+                <Text style={styles.achieveEmoji}>{unlocked ? a.emoji : '🔒'}</Text>
+                <Text style={[styles.achieveTitle, unlocked && { color: '#fff' }]}>{a.title}</Text>
+                <Text style={styles.achieveDesc}>{a.desc}</Text>
+                <Text style={[styles.achieveRarity, { color: unlocked ? a.color : '#444' }]}>{a.rarity}</Text>
+              </View>
+            );
+          })}
         </View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>About SolQuest</Text>
-        <View style={styles.aboutBox}>
-          <Text style={styles.aboutText}>SolQuest helps you discover the best Solana dApps and earn rewards while exploring the ecosystem. Built for the Solana Seeker.</Text>
-          <Text style={styles.version}>v1.0.0 - Hackathon Edition</Text>
+      <View style={styles.aboutSection}>
+        <View style={styles.aboutHeader}>
+          <Text style={styles.aboutLogo}>SolQuest</Text>
+          <Text style={styles.aboutVersion}>v1.0.0</Text>
+        </View>
+        <Text style={styles.aboutTagline}>Discover. Explore. Earn.</Text>
+        <Text style={styles.aboutDesc}>
+          SolQuest helps you discover the best Solana dApps through an engaging, gamified experience. Swipe through curated projects, complete daily quests, earn XP, and unlock achievements — all built for the Solana Seeker.
+        </Text>
+        <View style={styles.aboutDivider} />
+        <Text style={styles.aboutLabel}>Built for</Text>
+        <View style={styles.aboutBadges}>
+          <View style={styles.aboutBadge}>
+            <Text style={styles.aboutBadgeText}>Solana Seeker</Text>
+          </View>
+          <View style={[styles.aboutBadge, { borderColor: '#FF9500' }]}>
+            <Text style={[styles.aboutBadgeText, { color: '#FF9500' }]}>MONOLITH Hackathon</Text>
+          </View>
+        </View>
+        <Text style={styles.aboutLabel}>Powered by</Text>
+        <View style={styles.aboutBadges}>
+          <View style={[styles.aboutBadge, { borderColor: '#14F195' }]}>
+            <Text style={[styles.aboutBadgeText, { color: '#14F195' }]}>Solana</Text>
+          </View>
+          <View style={[styles.aboutBadge, { borderColor: '#E040FB' }]}>
+            <Text style={[styles.aboutBadgeText, { color: '#E040FB' }]}>SKR Token</Text>
+          </View>
         </View>
       </View>
 
@@ -153,10 +187,7 @@ const styles = StyleSheet.create({
   },
   statNumber: { color: '#9945FF', fontSize: 28, fontWeight: 'bold' },
   statLabel: { color: '#888', fontSize: 12, marginTop: 4 },
-  section: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
+  section: { paddingHorizontal: 16, marginBottom: 16 },
   sectionTitle: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
   progressBar: {
     height: 8,
@@ -165,11 +196,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 6,
   },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#9945FF',
-    borderRadius: 4,
-  },
+  progressFill: { height: '100%', backgroundColor: '#9945FF', borderRadius: 4 },
   progressText: { color: '#888', fontSize: 12 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tag: {
@@ -180,6 +207,20 @@ const styles = StyleSheet.create({
   },
   tagText: { color: '#9945FF', fontSize: 12, fontWeight: '600' },
   emptyText: { color: '#666', fontSize: 13 },
+  achieveHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  achieveCount: { color: '#9945FF', fontSize: 14, fontWeight: 'bold' },
+  rarityLegend: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 12,
+  },
+  rarityDot: { fontSize: 10 },
   achievements: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -191,21 +232,46 @@ const styles = StyleSheet.create({
     padding: 12,
     width: '48%',
     flexGrow: 1,
-    opacity: 0.4,
-  },
-  achievementDone: {
-    opacity: 1,
+    opacity: 0.5,
     borderWidth: 1,
-    borderColor: '#9945FF',
+    borderColor: '#222',
+  },
+  achieveRarityBar: {
+    height: 3,
+    borderRadius: 2,
+    marginBottom: 8,
   },
   achieveEmoji: { fontSize: 24, marginBottom: 4 },
-  achieveText: { color: '#fff', fontSize: 13, fontWeight: 'bold' },
-  achieveDesc: { color: '#888', fontSize: 11, marginTop: 2 },
-  aboutBox: {
+  achieveTitle: { color: '#888', fontSize: 13, fontWeight: 'bold' },
+  achieveDesc: { color: '#555', fontSize: 11, marginTop: 2 },
+  achieveRarity: { fontSize: 10, marginTop: 4, fontWeight: 'bold' },
+  aboutSection: {
+    marginHorizontal: 16,
     backgroundColor: '#1a1a2e',
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#9945FF33',
   },
-  aboutText: { color: '#888', fontSize: 13, lineHeight: 20 },
-  version: { color: '#666', fontSize: 11, marginTop: 8 },
+  aboutHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  aboutLogo: { color: '#9945FF', fontSize: 22, fontWeight: 'bold' },
+  aboutVersion: { color: '#666', fontSize: 12 },
+  aboutTagline: { color: '#fff', fontSize: 14, fontWeight: '600', marginBottom: 12 },
+  aboutDesc: { color: '#888', fontSize: 13, lineHeight: 20, marginBottom: 16 },
+  aboutDivider: { height: 1, backgroundColor: '#333', marginBottom: 16 },
+  aboutLabel: { color: '#666', fontSize: 11, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 },
+  aboutBadges: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  aboutBadge: {
+    borderWidth: 1,
+    borderColor: '#9945FF',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  aboutBadgeText: { color: '#9945FF', fontSize: 11, fontWeight: 'bold' },
 });
