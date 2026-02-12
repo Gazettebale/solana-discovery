@@ -10,6 +10,7 @@ interface AppContextType {
   gmStreak: number;
   xp: number;
   addXP: (amount: number) => void;
+  resetCards: () => void;
 }
 
 const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -21,7 +22,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [xp, setXp] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
-  // Load saved data on app start
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -42,7 +42,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     loadData();
   }, []);
 
-  // Save data whenever it changes
   useEffect(() => {
     if (!loaded) return;
     AsyncStorage.setItem('savedProjects', JSON.stringify(savedProjects));
@@ -76,10 +75,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setXp(prev => prev + amount);
   };
 
+  const resetCards = async () => {
+    setCurrentIndex(0);
+    setSavedProjects([]);
+    await AsyncStorage.setItem('currentIndex', '0');
+    await AsyncStorage.setItem('savedProjects', '[]');
+  };
+
   if (!loaded) return null;
 
   return (
-    <AppContext.Provider value={{ savedProjects, currentIndex, saveProject, skipProject, gmStreak, xp, addXP }}>
+    <AppContext.Provider value={{ savedProjects, currentIndex, saveProject, skipProject, gmStreak, xp, addXP, resetCards }}>
       {children}
     </AppContext.Provider>
   );

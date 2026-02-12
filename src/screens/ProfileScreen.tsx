@@ -18,7 +18,7 @@ const ACHIEVEMENTS = [
 ];
 
 export default function ProfileScreen() {
-  const { savedProjects, currentIndex } = useApp();
+  const { savedProjects, currentIndex, resetCards } = useApp();
   const reviewed = currentIndex;
   const total = projects.length;
   const seekerCount = savedProjects.filter(p => p.isSeeker).length;
@@ -99,7 +99,7 @@ export default function ProfileScreen() {
           {ACHIEVEMENTS.map(a => {
             const unlocked = a.check(reviewed, savedProjects.length, seekerCount);
             return (
-              <View key={a.id} style={[styles.achievement, unlocked ? { borderColor: a.color, borderWidth: 1 } : {}]}>
+              <View key={a.id} style={[styles.achievement, unlocked ? { borderColor: a.color, borderWidth: 1, opacity: 1 } : {}]}>
                 <View style={[styles.achieveRarityBar, { backgroundColor: unlocked ? a.color : '#333' }]} />
                 <Text style={styles.achieveEmoji}>{unlocked ? a.emoji : '🔒'}</Text>
                 <Text style={[styles.achieveTitle, unlocked && { color: '#fff' }]}>{a.title}</Text>
@@ -140,6 +140,10 @@ export default function ProfileScreen() {
           </View>
         </View>
       </View>
+
+      <TouchableOpacity style={styles.resetBtn} onPress={resetCards}>
+        <Text style={styles.resetBtnText}>Reset All Cards</Text>
+      </TouchableOpacity>
 
       <View style={{ height: 100 }} />
     </ScrollView>
@@ -189,43 +193,18 @@ const styles = StyleSheet.create({
   statLabel: { color: '#888', fontSize: 12, marginTop: 4 },
   section: { paddingHorizontal: 16, marginBottom: 16 },
   sectionTitle: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
-  progressBar: {
-    height: 8,
-    backgroundColor: '#1a1a2e',
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: 6,
-  },
+  progressBar: { height: 8, backgroundColor: '#1a1a2e', borderRadius: 4, overflow: 'hidden', marginBottom: 6 },
   progressFill: { height: '100%', backgroundColor: '#9945FF', borderRadius: 4 },
   progressText: { color: '#888', fontSize: 12 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tag: {
-    backgroundColor: '#9945FF22',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-  },
+  tag: { backgroundColor: '#9945FF22', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 5 },
   tagText: { color: '#9945FF', fontSize: 12, fontWeight: '600' },
   emptyText: { color: '#666', fontSize: 13 },
-  achieveHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
+  achieveHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   achieveCount: { color: '#9945FF', fontSize: 14, fontWeight: 'bold' },
-  rarityLegend: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 12,
-  },
+  rarityLegend: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 12 },
   rarityDot: { fontSize: 10 },
-  achievements: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
+  achievements: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   achievement: {
     backgroundColor: '#1a1a2e',
     borderRadius: 12,
@@ -236,11 +215,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#222',
   },
-  achieveRarityBar: {
-    height: 3,
-    borderRadius: 2,
-    marginBottom: 8,
-  },
+  achieveRarityBar: { height: 3, borderRadius: 2, marginBottom: 8 },
   achieveEmoji: { fontSize: 24, marginBottom: 4 },
   achieveTitle: { color: '#888', fontSize: 13, fontWeight: 'bold' },
   achieveDesc: { color: '#555', fontSize: 11, marginTop: 2 },
@@ -253,12 +228,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#9945FF33',
   },
-  aboutHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
+  aboutHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   aboutLogo: { color: '#9945FF', fontSize: 22, fontWeight: 'bold' },
   aboutVersion: { color: '#666', fontSize: 12 },
   aboutTagline: { color: '#fff', fontSize: 14, fontWeight: '600', marginBottom: 12 },
@@ -266,12 +236,17 @@ const styles = StyleSheet.create({
   aboutDivider: { height: 1, backgroundColor: '#333', marginBottom: 16 },
   aboutLabel: { color: '#666', fontSize: 11, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 },
   aboutBadges: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  aboutBadge: {
-    borderWidth: 1,
-    borderColor: '#9945FF',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
+  aboutBadge: { borderWidth: 1, borderColor: '#9945FF', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
   aboutBadgeText: { color: '#9945FF', fontSize: 11, fontWeight: 'bold' },
+  resetBtn: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    backgroundColor: '#E9456022',
+    borderWidth: 1,
+    borderColor: '#E94560',
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center',
+  },
+  resetBtnText: { color: '#E94560', fontSize: 14, fontWeight: 'bold' },
 });
